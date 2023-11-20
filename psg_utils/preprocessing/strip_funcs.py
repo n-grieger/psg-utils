@@ -414,12 +414,17 @@ def apply_strip_func(sleep_study, sample_rate):
     func_str, kwargs = sleep_study.strip_func
     f = globals()[func_str]
     try:
+        old_psg_len_sec = sleep_study.psg.shape[0] / sample_rate
+        old_hyp_len_sec = sleep_study.hypnogram.total_duration_sec
         psg, hypnogram = f(psg=sleep_study.psg,
                            hyp=sleep_study.hypnogram,
                            sample_rate=sample_rate,
                            check_lengths=True,  # Always check in the end
                            period_length_sec=sleep_study.get_period_length_in(TimeUnit.SECOND),
                            **kwargs)
+        if old_psg_len_sec != psg.shape[0] / sample_rate or \
+                old_hyp_len_sec != hypnogram.total_duration_sec:
+            logger.info(f"Applied strip function '{func_str}' to study {sleep_study.identifier}")
     except StripError as e:
         sleep_study.raise_err(StripError,
                               "Could not perform strip using '{}' strip function. Please investigate "
