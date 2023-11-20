@@ -211,22 +211,37 @@ def strip_to_match(psg, hyp, sample_rate, class_int=None, check_lengths=False, *
 
     See drop_class function for argument description.
     """
+    applied_rules = []
+    old_psg_len_sec = psg.shape[0] / sample_rate
+    old_hyp_len_sec = hyp.total_duration_sec
     psg_length_sec = psg.shape[0] / sample_rate
     if class_int and hyp.total_duration_sec > psg_length_sec:
         # Remove trailing class integer, e.g., UNKNOWN
+        applied_rules.append("strip_class_trailing_from_hyp")
         psg, hyp = strip_class_trailing_from_hyp(psg, hyp, class_int, sample_rate)
     if class_int and hyp.stages[0] == class_int:
         # Remove leading 'class_int' class, e.g., UNKNOWN
+        applied_rules.append("strip_class_leading_from_hyp")
         psg, hyp = strip_offset(psg, hyp, class_int, sample_rate, False)
     # Trim PSG first to ensure length divisible by period_length*sample_rate
     psg, _ = trim_psg_trailing(psg, sample_rate, hyp.period_length_sec)
+    if psg.shape[0] / sample_rate != psg_length_sec:
+        applied_rules.append("trim_psg_trailing")
     psg_length_sec = psg.shape[0] / sample_rate
     if hyp.total_duration_sec > psg_length_sec:
+        applied_rules.append("strip_hyp_to_match_psg_len")
         hyp = strip_hyp_to_match_psg_len(psg, hyp, sample_rate)
     if psg_length_sec > hyp.total_duration_sec:  # Note total_dur_sec. is a property
+        applied_rules.append("pad_hyp_to_match_psg_len")
         hyp = pad_hyp_to_match_psg_len(psg, hyp, sample_rate)
     if check_lengths:
         assert_equal_length(psg, hyp, sample_rate)
+
+    # Log applied rules
+    if len(applied_rules) > 0:
+        logger.info(f"Applied strip rules: {applied_rules} to trim/pad the PSG "
+                    f"from {old_psg_len_sec}s to {psg_length_sec}s and the hypnogram "
+                    f"from {old_hyp_len_sec}s to {hyp.total_duration_sec}s")
     return psg, hyp
 
 

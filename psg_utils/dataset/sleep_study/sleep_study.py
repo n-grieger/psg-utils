@@ -401,6 +401,8 @@ class SleepStudy(SubjectDirSleepStudyBase):
 
         if self.strip_func:
             # Strip the data using the passed function on the passed class
+            logger.info(f"Applying strip function {self.strip_func[0]} to PSG and hypnogram "
+                        f"of study {self.identifier}")
             self._psg, self._hypnogram = apply_strip_func(self, self.org_sample_rate)
         elif self.hypnogram:
             try:
