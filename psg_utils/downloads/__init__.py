@@ -34,4 +34,4 @@ def download_dataset(dataset_name, out_dir, N_first=None):
 def preprocess_dataset(dataset_name, out_dir):
     func = PREPROCESS_FUNCS.get(dataset_name, no_processing)
     logger.info("Preprocessing folder '{}' with function '{}'".format(out_dir, func.__name__))
-    func(out_dir)
+    func(out_dir, out_dir)

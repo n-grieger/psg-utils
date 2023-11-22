@@ -1,5 +1,6 @@
 import logging
 import os
+import shutil
 from glob import glob
 from psg_utils.downloads.utils import download_dataset
 
@@ -37,13 +38,14 @@ def download_phys(out_dataset_folder, N_first=None):
     )
 
 
-def preprocess_phys_hypnograms(dataset_folder_path):
+def preprocess_phys_hypnograms(dataset_folder_path, out_dir):
     """
     Preprocesses files from the PHYS dataset.
     OBS: Only processes the hypnogram (.arousal) files
          Creates 1 new file in each PHYS subject dir (.ids format)
 
     :param dataset_folder_path: path to PHYS file on local disk
+    :param out_dir: path to output directory for saving the prepared hypnograms
     :return: None
     """
     import numpy as np
@@ -67,16 +69,18 @@ def preprocess_phys_hypnograms(dataset_folder_path):
         name = os.path.split(os.path.abspath(folder))[-1]
         print(f"{i+1}/{len(subject_folders)}", name)
 
+        os.makedirs(os.path.join(out_dir, name), exist_ok=True)
+
         # Get sleep-stages
         edf_file = folder + f"/{name}.mat"
         org_hyp_file = folder + f"/{name}.arousal"
-        new_hyp_file = folder + f"/{name}.arousal.st"
+        new_hyp_file = os.path.join(out_dir, name, f"{name}.arousal.st")
         out_path = new_hyp_file.replace(".arousal.st", "-HYP.ids")
         if os.path.exists(out_path):
             print("Exists, skipping...")
             continue
         if os.path.exists(org_hyp_file):
-            os.rename(org_hyp_file, new_hyp_file)
+            shutil.copyfile(org_hyp_file, new_hyp_file)
 
         psg, header = load_psg(edf_file, load_channels=['C3-M2'])
         hyp = rdann(new_hyp_file[:-3], "st")
