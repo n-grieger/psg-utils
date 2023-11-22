@@ -419,19 +419,20 @@ class SleepStudy(SubjectDirSleepStudyBase):
             # Apply mne.mne.filter.notch_filter function with specified settings
             self._psg = apply_notch_filtering(self._psg, self.org_sample_rate, **self.notch_filter_settings)
 
-        if self.quality_control_func:
-            # Run over epochs and assess if epoch-specific changes should be
-            # made to limit the influence of very high noise level ecochs etc.
-            self._psg = apply_quality_control_func(self,
-                                                   self.org_sample_rate,
-                                                   warn_fraction=0.15,
-                                                   warn=not bool(self.times_loaded))
-
         # Set different sample rate of PSG?
         if self.org_sample_rate != self.sample_rate:
             self._psg = set_psg_sample_rate(self._psg,
                                             new_sample_rate=self.sample_rate,
                                             old_sample_rate=self.org_sample_rate)
+
+        if self.quality_control_func:
+            # Run over epochs and assess if epoch-specific changes should be
+            # made to limit the influence of very high noise level epochs etc.
+            self._psg = apply_quality_control_func(self,
+                                                   self.sample_rate,
+                                                   warn_fraction=0.15,
+                                                   warn=not bool(self.times_loaded))
+
         if self.scaler:
             self._psg, self._scaler_obj = apply_scaling(self.psg, self.scaler)
 
