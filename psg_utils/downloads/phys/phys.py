@@ -102,5 +102,9 @@ def preprocess_phys_hypnograms(dataset_folder_path, out_dir):
         diff = psg_length_sec - i[-1]
         assert diff >= 0
         d = list(np.diff(i)) + [(diff//30) * 30]
+        if d[-1] == 0:
+            d = d[:-1]
+            i = i[:-1]
+            s = s[:-1]
         SparseHypnogram(i, d, [Defaults.get_stage_string_to_class_int()[s_] for s_ in s], 30)
         to_ids(i, d, s, out_path)
