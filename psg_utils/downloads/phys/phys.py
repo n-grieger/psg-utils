@@ -67,7 +67,7 @@ def preprocess_phys_hypnograms(dataset_folder_path, out_dir):
 
     for i, folder in enumerate(subject_folders):
         name = os.path.split(os.path.abspath(folder))[-1]
-        print(f"{i+1}/{len(subject_folders)}", name)
+        logger.info(f"{i+1}/{len(subject_folders)} {name}")
 
         os.makedirs(os.path.join(out_dir, name), exist_ok=True)
 
@@ -77,7 +77,7 @@ def preprocess_phys_hypnograms(dataset_folder_path, out_dir):
         new_hyp_file = os.path.join(out_dir, name, f"{name}.arousal.st")
         out_path = new_hyp_file.replace(".arousal.st", "-HYP.ids")
         if os.path.exists(out_path):
-            print("Exists, skipping...")
+            logger.info("Exists, skipping...")
             continue
         if os.path.exists(org_hyp_file):
             shutil.copyfile(org_hyp_file, new_hyp_file)
